@@ -1,0 +1,137 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+repositories {
+    google()
+    mavenLocal()
+    jcenter()
+}
+
+android {
+    compileSdkVersion androidCompileSdkVersion
+    buildToolsVersion androidSdkBuildVersion
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    packagingOptions {
+        exclude 'lib/x86_64/darwin/libscrypt.dylib'
+    }
+
+    defaultConfig {
+        applicationId "com.mycelium.spvmodule"
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 300400
+        versionName "3.0.4.0"
+        multiDexEnabled true
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+    }
+
+    buildTypes {
+        all {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+        }
+        debug {
+            minifyEnabled false
+            applicationIdSuffix '.test'
+            debuggable true
+            //shrinkResources true
+            //minifyEnabled false
+        }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    signingConfigs {
+        release {
+            keyAlias = ''
+        }
+        btctestnet {
+            keyAlias = ''
+        }
+        commonDebug {
+            storeFile commonDebugKeystore
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    flavorDimensions "flavor"
+
+    productFlavors {
+        prodnet {
+            applicationId 'com.mycelium.module.spvbtc'
+            versionName = defaultConfig.versionName
+            signingConfig signingConfigs.release
+        }
+        btctestnet {
+            targetSdkVersion 23
+            minSdkVersion 19
+            versionName = defaultConfig.versionName + '-TESTNET'
+            signingConfig signingConfigs.btctestnet
+        }
+    }
+    buildToolsVersion androidSdkBuildVersion
+}
+
+// use the keystore file from the local repository, so that we share the same
+// signatures while developing
+if (commonDebugKeystore.exists()) {
+    android.buildTypes.debug.signingConfig = android.signingConfigs.commonDebug
+    // might be needed later on, if we have a devel flavor (if needed at all)
+    //android.productFlavors.dev.signingConfig = android.signingConfigs.commonDebug
+    logger.info("Using common debug.keystore " + commonDebugKeystore)
+}
+
+dependencies {
+    testImplementation "junit:junit:$junitVersion"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:appcompat-v7:$androidSupportVersion"
+    implementation "com.android.support:support-v4:$androidSupportVersion"
+    implementation "com.android.support:preference-v7:$androidSupportVersion"
+    implementation 'com.android.support:multidex:1.0.2'
+    implementation 'org.bitcoinj:bitcoinj-core:0.15-SNAPSHOT'
+
+    implementation project(includePrefix +':spvmodulecontract')
+    implementation project(includePrefix +':myceliummodularizationtools')
+    implementation ("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version") {
+        exclude(group: 'org.jetbrains', module: 'annotations')
+    }
+    implementation(guavaArtifact) {
+        force = true
+    }
+    implementation(project(path: ':wapi')) {
+        exclude module: 'annotations'
+    }
+}
+
+if (project.hasProperty('prodKeyStore') &&
+        project.hasProperty('prodKeyAlias') &&
+        project.hasProperty('prodKeyStorePassword') &&
+        project.hasProperty('prodKeyAliasPassword')) {
+    android.signingConfigs.release.storeFile = file('../../' + prodKeyStore)
+    android.signingConfigs.release.keyAlias = prodKeyAlias
+    android.signingConfigs.release.storePassword = prodKeyStorePassword
+    android.signingConfigs.release.keyPassword = prodKeyAliasPassword
+} else {
+    android.productFlavors.prodnet.signingConfig = null
+}
+
+if (project.hasProperty('testKeyStore') &&
+        project.hasProperty('testKeyAlias') &&
+        project.hasProperty('testKeyStorePassword') &&
+        project.hasProperty('testKeyAliasPassword')) {
+    android.signingConfigs.btctestnet.storeFile = file('../../' + testKeyStore)
+    android.signingConfigs.btctestnet.keyAlias = testKeyAlias
+    android.signingConfigs.btctestnet.storePassword = testKeyStorePassword
+    android.signingConfigs.btctestnet.keyPassword = testKeyAliasPassword
+} else {
+    android.productFlavors.btctestnet.signingConfig = null
+}
