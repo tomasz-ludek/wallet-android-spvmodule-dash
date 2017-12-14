@@ -1,0 +1,114 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    google()
+    mavenLocal()
+    jcenter()
+    maven { url 'https://maven.fabric.io/public' }
+}
+
+def releaseKeystorePropertiesFile = project.file('release.keystore.properties')
+def releaseKeystoreProperties = new Properties()
+if (releaseKeystorePropertiesFile.exists()) {
+    releaseKeystoreProperties.load(new FileInputStream(releaseKeystorePropertiesFile))
+} else {
+    releaseKeystoreProperties.each {
+        key, val -> extensions."$key" = val
+    }
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion androidSdkBuildVersion
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    defaultConfig {
+        applicationId "org.dash.mycelium.spvdashmodule"
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        release {
+            storeFile project.file('release.keystore')
+            storePassword releaseKeystoreProperties['storePassword']
+            keyAlias releaseKeystoreProperties['keyAlias']
+            keyPassword releaseKeystoreProperties['keyPassword']
+        }
+        debug {
+            storeFile project.file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        all {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+        }
+        debug {
+            debuggable true
+            applicationIdSuffix '.debug'
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    flavorDimensions "flavor"
+
+    productFlavors {
+        mainnet {
+            versionName = defaultConfig.versionName
+        }
+        _testnet {
+            applicationIdSuffix '.testnet'
+            versionName = defaultConfig.versionName + '-TESTNET'
+        }
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:$junitVersion"
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:25.4.0'
+    implementation 'com.android.support:recyclerview-v7:25.4.0'
+    implementation 'com.android.support:support-v4:25.4.0'
+    implementation 'org.dashj:dashj-core:0.14.4.2'
+    implementation 'com.google.protobuf:protobuf-java:2.6.1'
+    implementation 'com.android.support:multidex:1.0.2'
+    implementation guavaArtifact
+    implementation 'org.slf4j:slf4j-api:1.7.22'
+    implementation 'com.github.tony19:logback-android-core:1.1.1-6'
+    implementation('com.github.tony19:logback-android-classic:1.1.1-6') {
+        // workaround issue #73
+        exclude group: 'com.google.android', module: 'android'
+    }
+    implementation project(path: ':myceliummodularizationtools')
+    implementation project(path: ':spvmodulecontract')
+    implementation(project(path: ':wapi')) {
+        exclude module: 'annotations'
+    }
+    implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
+        transitive = true;
+    }
+}

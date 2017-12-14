@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">SPV Dash Module</string>
+
+    <string name="peers_activity_title">Peers list</string>
+
+    <string name="notification_coins_received_msg">Received %s</string>
+    <string name="notification_peers_connected_msg">%d peers connected</string>
+    <string name="button_request_coins">Request coins</string>
+    <string name="button_send_coins">Send coins</string>
+    <string name="button_scan">Scan</string>
+    <string name="wallet_not_initialized">Wallet not initialized</string>
+
+    <string name="peer_list_fragment_empty">No peers connected</string>
+    <string name="peer_list_row_ping_time">⇆ %d&#x2009;ms</string>
+
+</resources>
