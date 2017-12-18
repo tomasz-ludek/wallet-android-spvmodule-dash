@@ -331,7 +331,7 @@ public class TransactionContentProvider extends ContentProvider {
         for (TransactionSummary rowItem : transactionsSummary) {
             List<Object> columnValues = new ArrayList<>();
             columnValues.add(rowItem.txid.toString());                              //TransactionContract.TransactionSummary._ID
-            columnValues.add(rowItem.value.getValue());                             //TransactionContract.TransactionSummary.VALUE
+            columnValues.add(rowItem.value.toPlainString());                        //TransactionContract.TransactionSummary.VALUE
             columnValues.add(rowItem.isIncoming ? 1 : 0);                           //TransactionContract.TransactionSummary.IS_INCOMING
             columnValues.add(rowItem.time);                                         //TransactionContract.TransactionSummary.TIME
             columnValues.add(rowItem.height);                                       //TransactionContract.TransactionSummary.HEIGHT
@@ -400,7 +400,13 @@ public class TransactionContentProvider extends ContentProvider {
                 destAddressOptional = Optional.absent();
             }
             Coin dashjValue = dashjTransaction.getValue(wallet);
-            boolean isIncoming = dashjValue.isPositive();
+            boolean isIncoming;
+            if (dashjValue.isPositive()) {
+                isIncoming = true;
+            } else {
+                isIncoming = false;
+                dashjValue = dashjValue.negate();
+            }
             int height = dashjTransaction.getConfidence().getDepthInBlocks();
             TransactionSummary transactionSummary = new TransactionSummary(
                     dashjTransaction.getHash(),
