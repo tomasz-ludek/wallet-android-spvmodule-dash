@@ -103,11 +103,8 @@ dependencies {
         // workaround issue #73
         exclude group: 'com.google.android', module: 'android'
     }
-    implementation project(path: ':myceliummodularizationtools')
-    implementation project(path: ':spvmodulecontract')
-    implementation(project(path: ':wapi')) {
-        exclude module: 'annotations'
-    }
+    implementation project(includePrefix +':modulespvcontract')
+    implementation project(includePrefix +':myceliummodularizationtools')
     implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true;
     }

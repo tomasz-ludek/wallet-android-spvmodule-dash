@@ -19,14 +19,12 @@ import com.mycelium.spvmodule.dash.providers.data.AccountBalanceCursor;
 import com.mycelium.spvmodule.dash.providers.data.CurrentReceiveAddressCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionDetailsCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionsSummaryCursor;
+import com.mycelium.spvmodule.dash.providers.data.model.TransactionDetails;
+import com.mycelium.spvmodule.dash.providers.data.model.TransactionSummary;
 import com.mycelium.spvmodule.providers.TransactionContract;
 import com.mycelium.spvmodule.providers.data.CalculateMaxSpendableCursor;
 import com.mycelium.spvmodule.providers.data.CheckSendAmountCursor;
 import com.mycelium.spvmodule.providers.data.ValidateQrCodeCursor;
-import com.mycelium.wapi.model.TransactionDetails;
-import com.mycelium.wapi.model.TransactionSummary;
-import com.mycelium.wapi.wallet.ConfirmationRiskProfileLocal;
-import com.mycelium.wapi.wallet.currency.ExactBitcoinValue;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
@@ -189,7 +187,7 @@ public class TransactionContentProvider extends ContentProvider {
 
     private String checkSendAmount(Wallet wallet, TransactionFee minerFee, long amountToSend) {
         log.info("checkSendAmount, minerFee = {}, amountToSend = {}", minerFee, amountToSend);
-        Address address = getNullAddress(Constants.NETWORK_PARAMETERS);
+        Address address = getNullAddress(wallet.getNetworkParameters());
         Coin amount = Coin.valueOf(amountToSend);
         SendRequest sendRequest = SendRequest.to(address, amount);
         sendRequest.feePerKb = Constants.minerFeeValue(minerFee);
@@ -332,27 +330,23 @@ public class TransactionContentProvider extends ContentProvider {
         TransactionsSummaryCursor cursor = new TransactionsSummaryCursor(transactionsSummary.size());
         for (TransactionSummary rowItem : transactionsSummary) {
             List<Object> columnValues = new ArrayList<>();
-            columnValues.add(rowItem.txid.toHex());                                 //TransactionContract.TransactionSummary._ID
-            columnValues.add(rowItem.value.getValue().toPlainString());             //TransactionContract.TransactionSummary.VALUE
+            columnValues.add(rowItem.txid.toString());                              //TransactionContract.TransactionSummary._ID
+            columnValues.add(rowItem.value.getValue());                             //TransactionContract.TransactionSummary.VALUE
             columnValues.add(rowItem.isIncoming ? 1 : 0);                           //TransactionContract.TransactionSummary.IS_INCOMING
             columnValues.add(rowItem.time);                                         //TransactionContract.TransactionSummary.TIME
             columnValues.add(rowItem.height);                                       //TransactionContract.TransactionSummary.HEIGHT
             columnValues.add(rowItem.confirmations);                                //TransactionContract.TransactionSummary.CONFIRMATIONS
             columnValues.add(rowItem.isQueuedOutgoing ? 1 : 0);                     //TransactionContract.TransactionSummary.IS_QUEUED_OUTGOING
-            if (rowItem.confirmationRiskProfile.isPresent()) {
-                ConfirmationRiskProfileLocal confirmationRiskProfile = rowItem.confirmationRiskProfile.get();
-                columnValues.add(confirmationRiskProfile.unconfirmedChainLength);   //TransactionContract.TransactionSummary.CONFIRMATION_RISK_PROFILE_LENGTH
-                columnValues.add(confirmationRiskProfile.hasRbfRisk);               //TransactionContract.TransactionSummary.CONFIRMATION_RISK_PROFILE_RBF_RISK
-                columnValues.add(confirmationRiskProfile.isDoubleSpend);            //TransactionContract.TransactionSummary.CONFIRMATION_RISK_PROFILE_DOUBLE_SPEND
-            } else {
-                columnValues.add(-1);
-                columnValues.add(null);
-                columnValues.add(null);
-            }
+
+            //FIXME do we need those values? (com.mycelium.wapi.model.TransactionSummary.confirmationRiskProfile [ConfirmationRiskProfileLocal])
+            columnValues.add(-1);
+            columnValues.add(null);
+            columnValues.add(null);
+
             boolean isDestAddressPresent = rowItem.destinationAddress.isPresent();
             columnValues.add(isDestAddressPresent ? rowItem.destinationAddress.get().toString() : null); //TransactionContract.TransactionSummary.DESTINATION_ADDRESS
             StringBuilder addressesBuilder = new StringBuilder();
-            for (com.mrd.bitlib.model.Address addr : rowItem.toAddresses) {
+            for (Address addr : rowItem.toAddresses) {
                 if (addressesBuilder.length() > 0) {
                     addressesBuilder.append(",");
                 }
@@ -377,36 +371,29 @@ public class TransactionContentProvider extends ContentProvider {
             }
         });
         for (Transaction dashjTransaction : transactions) {
-            com.mrd.bitlib.model.Transaction bitlibTransaction;
-            try {
-                bitlibTransaction = com.mrd.bitlib.model.Transaction.fromBytes(dashjTransaction.bitcoinSerialize());
-            } catch (com.mrd.bitlib.model.Transaction.TransactionParsingException e) {
-                log.warn("Unable to convert transaction {}", dashjTransaction.getHashAsString(), e);
-                continue;
-            }
 
-            List<com.mrd.bitlib.model.Address> toAddresses = new ArrayList<>();
-            com.mrd.bitlib.model.Address destAddress = null;
-
-            com.mrd.bitlib.model.NetworkParameters networkParametersBitlib = getBitlibNetworkParameters(wallet);
+            List<Address> toAddresses = new ArrayList<>();
+            Address destAddress = null;
 
             for (TransactionOutput transactionOutput : dashjTransaction.getOutputs()) {
-                com.mrd.bitlib.model.Address toAddress = com.mrd.bitlib.model.Address.fromString(
-                        transactionOutput.getScriptPubKey()
+                Address toAddress = Address.fromBase58(
+                        wallet.getNetworkParameters(),
+                        transactionOutput
+                                .getScriptPubKey()
                                 .getToAddress(wallet.getNetworkParameters())
-                                .toBase58()//, networkParametersBitlib //FIXME unable to validate network in Address.fromString(address, network)
+                                .toBase58()
                 );
                 if (!transactionOutput.isMine(wallet)) {
                     destAddress = toAddress;
                 }
-                if (toAddress != com.mrd.bitlib.model.Address.getNullAddress(networkParametersBitlib)) {
+                if (toAddress != getNullAddress(wallet.getNetworkParameters())) {
                     toAddresses.add(toAddress);
                 }
             }
 
             int confirmations = dashjTransaction.getConfidence().getDepthInBlocks();
             boolean isQueuedOutgoing = false; //FIXME Change the UI so MBW understand BitcoinJ confidence type.
-            Optional<com.mrd.bitlib.model.Address> destAddressOptional;
+            Optional<Address> destAddressOptional;
             if (destAddress != null) {
                 destAddressOptional = Optional.of(destAddress);
             } else {
@@ -414,34 +401,17 @@ public class TransactionContentProvider extends ContentProvider {
             }
             Coin dashjValue = dashjTransaction.getValue(wallet);
             boolean isIncoming = dashjValue.isPositive();
-            ExactBitcoinValue bitlibValue = ExactBitcoinValue.from(Math.abs(dashjValue.value));
             int height = dashjTransaction.getConfidence().getDepthInBlocks();
             TransactionSummary transactionSummary = new TransactionSummary(
-                    bitlibTransaction.getHash(),
-                    bitlibValue, isIncoming,
+                    dashjTransaction.getHash(),
+                    dashjValue, isIncoming,
                     dashjTransaction.getUpdateTime().getTime() / 1000,
                     height, confirmations,
-                    isQueuedOutgoing, null,
-                    destAddressOptional, toAddresses
+                    isQueuedOutgoing, destAddressOptional, toAddresses
             );
             transactionsSummary.add(transactionSummary);
         }
         return transactionsSummary;
-    }
-
-    private com.mrd.bitlib.model.NetworkParameters getBitlibNetworkParameters(Wallet wallet) {
-        String networkId = wallet.getNetworkParameters().getId();
-        switch (networkId) {
-            case NetworkParameters.ID_MAINNET: {
-                return com.mrd.bitlib.model.NetworkParameters.productionNetwork;
-            }
-            case NetworkParameters.ID_TESTNET: {
-                return com.mrd.bitlib.model.NetworkParameters.testNetwork;
-            }
-            default: {
-                throw new RuntimeException("Wrong network parameters " + networkId);
-            }
-        }
     }
 
     private Cursor handleTransactionDetails(Wallet wallet, Uri uri) {
@@ -455,7 +425,7 @@ public class TransactionContentProvider extends ContentProvider {
         }
 
         List<Object> columnValues = new ArrayList<>();
-        columnValues.add(transactionDetails.hash.toHex());      //TransactionContract.Transaction._ID
+        columnValues.add(transactionDetails.hash.toString());   //TransactionContract.Transaction._ID
         columnValues.add(transactionDetails.height);            //TransactionContract.Transaction.HEIGHT
         columnValues.add(transactionDetails.time);              //TransactionContract.Transaction.TIME
         columnValues.add(transactionDetails.rawSize);           //TransactionContract.Transaction.RAW_SIZE
@@ -482,26 +452,26 @@ public class TransactionContentProvider extends ContentProvider {
         return cursor;
     }
 
-    private TransactionDetails getTransactionDetails(Wallet wallet, String hash) {
-        Transaction dashjTransaction = wallet.getTransaction(Sha256Hash.wrap(hash));
+    private TransactionDetails getTransactionDetails(Wallet wallet, String hashStr) {
+        Sha256Hash hash = Sha256Hash.wrap(hashStr);
+        Transaction dashjTransaction = wallet.getTransaction(hash);
         if (dashjTransaction == null) {
             return null;
         }
-        com.mrd.bitlib.model.NetworkParameters networkParametersBitlib = getBitlibNetworkParameters(wallet);
 
         List<TransactionDetails.Item> inputs = new ArrayList<>();
         for (TransactionInput input : dashjTransaction.getInputs()) {
             TransactionOutput connectedOutput = input.getOutpoint().getConnectedOutput();
             Coin value = input.getValue();
-            com.mrd.bitlib.model.Address bitlibAddress;
+
+            Address address;
             if (connectedOutput == null) {
-                bitlibAddress = com.mrd.bitlib.model.Address.getNullAddress(networkParametersBitlib);
+                address = getNullAddress(wallet.getNetworkParameters());
             } else {
-                Address dashjAddress = connectedOutput.getScriptPubKey().getToAddress(wallet.getNetworkParameters());
-                bitlibAddress = com.mrd.bitlib.model.Address.fromString(dashjAddress.toBase58());//, networkParametersBitlib); //FIXME unable to validate network in Address.fromString(address, network)
+                address = connectedOutput.getScriptPubKey().getToAddress(wallet.getNetworkParameters());
             }
             TransactionDetails.Item item = new TransactionDetails.Item(
-                    bitlibAddress,
+                    address,
                     value != null ? value.getValue() : 0L,
                     input.isCoinBase());
             inputs.add(item);
@@ -509,11 +479,10 @@ public class TransactionContentProvider extends ContentProvider {
 
         List<TransactionDetails.Item> outputs = new ArrayList<>();
         for (TransactionOutput output : dashjTransaction.getOutputs()) {
-            Address dashjAddress = output.getScriptPubKey().getToAddress(wallet.getNetworkParameters());
-            com.mrd.bitlib.model.Address bitlibAddress = com.mrd.bitlib.model.Address.fromString(dashjAddress.toBase58());//, networkParametersBitlib);  //FIXME unable to validate network in Address.fromString(address, network)
+            Address address = output.getScriptPubKey().getToAddress(wallet.getNetworkParameters());
             Coin value = output.getValue();
             TransactionDetails.Item item = new TransactionDetails.Item(
-                    bitlibAddress,
+                    address,
                     value != null ? value.getValue() : 0L,
                     false);
             outputs.add(item);
@@ -521,7 +490,7 @@ public class TransactionContentProvider extends ContentProvider {
 
         int height = dashjTransaction.getConfidence().getDepthInBlocks();
         return new TransactionDetails(
-                com.mrd.bitlib.util.Sha256Hash.fromString(hash),
+                hash,
                 height,
                 (int) (dashjTransaction.getUpdateTime().getTime() / 1000),
                 inputs.toArray(new TransactionDetails.Item[inputs.size()]),
