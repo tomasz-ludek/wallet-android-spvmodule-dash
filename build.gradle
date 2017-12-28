@@ -35,6 +35,11 @@ android {
         javaMaxHeapSize "4g"
     }
 
+    packagingOptions {
+        exclude 'lib/x86_64/darwin/libscrypt.dylib'
+        exclude 'META-INF/LICENSE'
+    }
+
     defaultConfig {
         applicationId "org.dash.mycelium.spvdashmodule"
         minSdkVersion 19
