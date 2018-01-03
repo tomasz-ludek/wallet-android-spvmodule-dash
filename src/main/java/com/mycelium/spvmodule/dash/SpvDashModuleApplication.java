@@ -218,7 +218,8 @@ public class SpvDashModuleApplication extends MultiDexApplication implements Mod
                 return "com.mycelium.testnetwallet";
             }
             case "org.dash.mycelium.spvdashmodule.testnet.debug":{
-                return "com.mycelium.devwallet_spore";
+//                return "com.mycelium.devwallet_spore";
+                return "com.mycelium.testnetdigitalassets";
             }
             default: {
                 throw new RuntimeException("No mbw module defined for BuildConfig " + BuildConfig.APPLICATION_ID);
