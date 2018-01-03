@@ -533,7 +533,7 @@ public class SpvService extends android.app.Service implements BlockchainService
 
             final long earliestKeyCreationTime = wallet.getEarliestKeyCreationTime();
 
-            if (!blockChainFileExists && earliestKeyCreationTime > 0) {
+            if (!blockChainFileExists && earliestKeyCreationTime > 0 && !Constants.TEST) {
                 try {
                     final Stopwatch watch = Stopwatch.createStarted();
                     final InputStream checkpointsInputStream = getAssets().open(Constants.Files.CHECKPOINTS_FILENAME);

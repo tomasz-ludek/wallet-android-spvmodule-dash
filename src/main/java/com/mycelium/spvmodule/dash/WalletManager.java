@@ -57,8 +57,8 @@ public class WalletManager {
         loadWalletFromProtobuf(application);
     }
 
-    public boolean isWalletReady() {
-        return wallet != null;
+    public static boolean isWalletReady() {
+        return instance != null && instance.wallet != null;
     }
 
     public Wallet getWallet() {
