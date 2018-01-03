@@ -171,12 +171,15 @@ public class TransactionContentProvider extends ContentProvider {
         CheckSendAmountCursor cursor = new CheckSendAmountCursor();
         if (TransactionContract.CheckSendAmount.SELECTION_COMPLETE.equals(selection)) {
             String minerFeeStr = selectionArgs[1];
-            TransactionFee minerFee = TransactionFee.valueOf(minerFeeStr);
-            long amountToSend = Long.parseLong(selectionArgs[2]);
-            String checkSendAmountResult = checkSendAmount(wallet, minerFee, amountToSend);
+            String txFeeFactorStr = selectionArgs[2];
+            TransactionFee txFee = TransactionFee.valueOf(minerFeeStr);
+            String amountToSendStr = selectionArgs[3];
+            long amountToSend = Long.parseLong(amountToSendStr);
+            String checkSendAmountResult = checkSendAmount(wallet, txFee, amountToSend);
 
             List<Object> columnValues = new ArrayList<>();
-            columnValues.add(minerFee);                 //TransactionContract.CheckSendAmount.MINER_FEE
+            columnValues.add(txFee);                    //TransactionContract.CheckSendAmount.TX_FEE
+            columnValues.add(txFeeFactorStr);           //TransactionContract.CheckSendAmount.TX_FEE_FACTOR
             columnValues.add(amountToSend);             //TransactionContract.CheckSendAmount.AMOUNT_TO_SEND
             columnValues.add(checkSendAmountResult);    //TransactionContract.CheckSendAmount.RESULT
             cursor.addRow(columnValues);
@@ -212,10 +215,13 @@ public class TransactionContentProvider extends ContentProvider {
         CalculateMaxSpendableCursor cursor = new CalculateMaxSpendableCursor();
         if (selection.equals(TransactionContract.CalculateMaxSpendable.SELECTION_COMPLETE)) {
             String minerFeeStr = selectionArgs[1];
-            TransactionFee minerFee = TransactionFee.valueOf(minerFeeStr);
-            Coin maxSpendableAmount = calculateMaxSpendableAmount(wallet, minerFee);
+            String txFeeFactor = selectionArgs[1];
+            TransactionFee txFee = TransactionFee.valueOf(minerFeeStr);
+            Coin maxSpendableAmount = calculateMaxSpendableAmount(wallet, txFee);
 
             List<Object> columnValues = new ArrayList<>();
+            columnValues.add(txFee);
+            columnValues.add(txFeeFactor);
             columnValues.add(maxSpendableAmount);       //TransactionContract.CalculateMaxSpendable.MAX_SPENDABLE
             cursor.addRow(columnValues);
             return cursor;
