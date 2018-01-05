@@ -185,15 +185,11 @@ public class WalletManager {
             throw new IOException("Inconsistent wallet backup");
         }
 
-        log.info("Wallet successfully restored from seed:\t" + words.get(0) + ", " + words.get(1) + "\n", wallet.toString());
+        log.info("Wallet successfully restored from seed");
 
         walletFile = context.getFileStreamPath(Constants.Files.WALLET_FILENAME_PROTOBUF);
         wallet.saveToFile(walletFile);
 
-        /*
-        this.wallet = wallet;
-        afterLoadWallet(context);
-        */
         loadWalletFromProtobuf(application);
     }
 

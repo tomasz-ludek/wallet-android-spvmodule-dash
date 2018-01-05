@@ -139,8 +139,7 @@ public class SpvService extends android.app.Service implements BlockchainService
         public void onCoinsReceived(final Wallet wallet, final Transaction tx, final Coin prevBalance,
                                     final Coin newBalance) {
 
-            Log.d(LOG_TAG, "onCoinsReceived0(...): " + wallet.getBalance() + "\t" +  System.identityHashCode(wallet));
-            Log.d(LOG_TAG, "onCoinsReceived1(...): " + walletManager.getWallet().getBalance() + "\t" +  System.identityHashCode(walletManager.getWallet()));
+            Log.d(LOG_TAG, "onCoinsReceived(...)");
 
             transactionsReceived.incrementAndGet();
 
@@ -246,9 +245,6 @@ public class SpvService extends android.app.Service implements BlockchainService
             } else {
                 delayHandler.postDelayed(runnable, BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS);
             }
-
-            Coin balance = walletManager.getWallet().getBalance();
-            log.info("onBlocksDownloaded balance: {}", balance.toFriendlyString());
         }
 
         private final Runnable runnable = new Runnable() {
