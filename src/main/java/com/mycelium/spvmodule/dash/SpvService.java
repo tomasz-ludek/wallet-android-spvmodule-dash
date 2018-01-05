@@ -127,8 +127,8 @@ public class SpvService extends android.app.Service implements BlockchainService
 
     private static final String LOG_TAG = SpvService.class.getSimpleName();
 
-    private final ThrottlingWalletChangeListener walletEventListener = new ThrottlingWalletChangeListener(
-            APPWIDGET_THROTTLE_MS) {
+    private final ThrottlingWalletChangeListener walletEventListener = new ThrottlingWalletChangeListener(APPWIDGET_THROTTLE_MS) {
+
         @Override
         public void onThrottledWalletChanged() {
 //            WalletBalanceWidgetProvider.updateWidgets(BlockchainServiceImpl.this, application.getWallet());
@@ -139,7 +139,8 @@ public class SpvService extends android.app.Service implements BlockchainService
         public void onCoinsReceived(final Wallet wallet, final Transaction tx, final Coin prevBalance,
                                     final Coin newBalance) {
 
-            Log.d(LOG_TAG, "onCoinsReceived(...)");
+            Log.d(LOG_TAG, "onCoinsReceived0(...): " + wallet.getBalance() + "\t" +  System.identityHashCode(wallet));
+            Log.d(LOG_TAG, "onCoinsReceived1(...): " + walletManager.getWallet().getBalance() + "\t" +  System.identityHashCode(walletManager.getWallet()));
 
             transactionsReceived.incrementAndGet();
 
@@ -245,6 +246,9 @@ public class SpvService extends android.app.Service implements BlockchainService
             } else {
                 delayHandler.postDelayed(runnable, BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS);
             }
+
+            Coin balance = walletManager.getWallet().getBalance();
+            log.info("onBlocksDownloaded balance: {}", balance.toFriendlyString());
         }
 
         private final Runnable runnable = new Runnable() {
@@ -513,8 +517,6 @@ public class SpvService extends android.app.Service implements BlockchainService
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, lockName);
         }
 
-        Wallet wallet = walletManager.getWallet();
-
         peerConnectivityListener = new PeerConnectivityListener();
 
         broadcastPeerState(0);
@@ -524,14 +526,14 @@ public class SpvService extends android.app.Service implements BlockchainService
 
         if (!blockChainFileExists) {
             log.info("Blockchain does not exist, resetting wallet");
-            wallet.reset();
+            walletManager.getWallet().reset();
         }
 
         try {
             blockStore = new SPVBlockStore(Constants.NETWORK_PARAMETERS, blockChainFile);
             blockStore.getChainHead(); // detect corruptions as early as possible
 
-            final long earliestKeyCreationTime = wallet.getEarliestKeyCreationTime();
+            final long earliestKeyCreationTime = walletManager.getWallet().getEarliestKeyCreationTime();
 
             if (!blockChainFileExists && earliestKeyCreationTime > 0 && !Constants.TEST) {
                 try {
@@ -554,7 +556,7 @@ public class SpvService extends android.app.Service implements BlockchainService
         }
 
         try {
-            blockChain = new BlockChain(Constants.NETWORK_PARAMETERS, wallet, blockStore);
+            blockChain = new BlockChain(Constants.NETWORK_PARAMETERS, walletManager.getWallet(), blockStore);
         } catch (final BlockStoreException x) {
             throw new Error("Blockchain cannot be created", x);
         }
@@ -565,13 +567,13 @@ public class SpvService extends android.app.Service implements BlockchainService
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
         registerReceiver(connectivityReceiver, intentFilter); // implicitly start PeerGroup
 
-        wallet.addCoinsReceivedEventListener(Threading.SAME_THREAD, walletEventListener);
-        wallet.addCoinsSentEventListener(Threading.SAME_THREAD, walletEventListener);
-        wallet.addChangeEventListener(Threading.SAME_THREAD, walletEventListener);
+        walletManager.getWallet().addCoinsReceivedEventListener(Threading.SAME_THREAD, walletEventListener);
+        walletManager.getWallet().addCoinsSentEventListener(Threading.SAME_THREAD, walletEventListener);
+        walletManager.getWallet().addChangeEventListener(Threading.SAME_THREAD, walletEventListener);
 
         registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
-        wallet.getContext().initDashSync(getDir("masternode", MODE_PRIVATE).getAbsolutePath());
+        walletManager.getWallet().getContext().initDashSync(getDir("masternode", MODE_PRIVATE).getAbsolutePath());
     }
 
     @Override
@@ -648,17 +650,16 @@ public class SpvService extends android.app.Service implements BlockchainService
             return;
         }
 
-        Wallet wallet = walletManager.getWallet();
-        wallet.removeChangeEventListener(walletEventListener);
-        wallet.removeCoinsSentEventListener(walletEventListener);
-        wallet.removeCoinsReceivedEventListener(walletEventListener);
+        walletManager.getWallet().removeChangeEventListener(walletEventListener);
+        walletManager.getWallet().removeCoinsSentEventListener(walletEventListener);
+        walletManager.getWallet().removeCoinsReceivedEventListener(walletEventListener);
 
         unregisterReceiver(connectivityReceiver);
 
         if (peerGroup != null) {
             peerGroup.removeDisconnectedEventListener(peerConnectivityListener);
             peerGroup.removeConnectedEventListener(peerConnectivityListener);
-            peerGroup.removeWallet(wallet);
+            peerGroup.removeWallet(walletManager.getWallet());
             peerGroup.stop();
 
             log.info("Peergroup stopped");

@@ -127,8 +127,12 @@ public class TransactionContentProvider extends ContentProvider {
         checkSignature();
         propagate(Constants.CONTEXT);
 
-        if (WalletManager.isWalletReady()) {
-            WalletManager walletManager = WalletManager.getInstance();
+        if (!WalletManager.isInitialized()) {
+            return null;
+        }
+
+        WalletManager walletManager = WalletManager.getInstance();
+        if (walletManager.isWalletReady()) {
             if (selection == null || selectionArgs == null || !selection.startsWith(TransactionContract.TransactionSummary.SELECTION_ACCOUNT_INDEX)) {
                 throw new IllegalArgumentException("selection has to define accountIndex");     //FIXME does it make sense to define separate SELECTION_ACCOUNT_INDEX for each table?
             }

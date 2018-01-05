@@ -57,8 +57,12 @@ public class WalletManager {
         loadWalletFromProtobuf(application);
     }
 
-    public static boolean isWalletReady() {
-        return instance != null && instance.wallet != null;
+    public static boolean isInitialized() {
+        return instance != null;
+    }
+
+    public boolean isWalletReady() {
+        return wallet != null;
     }
 
     public Wallet getWallet() {
@@ -181,13 +185,16 @@ public class WalletManager {
             throw new IOException("Inconsistent wallet backup");
         }
 
-        log.info("Wallet successfully restored from seed\n" + wallet.toString());
+        log.info("Wallet successfully restored from seed:\t" + words.get(0) + ", " + words.get(1) + "\n", wallet.toString());
 
         walletFile = context.getFileStreamPath(Constants.Files.WALLET_FILENAME_PROTOBUF);
         wallet.saveToFile(walletFile);
 
+        /*
         this.wallet = wallet;
         afterLoadWallet(context);
+        */
+        loadWalletFromProtobuf(application);
     }
 
     private Wallet restoreWalletFromBackup(Context context) {
