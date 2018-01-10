@@ -16,7 +16,6 @@ import com.mycelium.spvmodule.dash.BuildConfig;
 import com.mycelium.spvmodule.dash.Constants;
 import com.mycelium.spvmodule.dash.WalletManager;
 import com.mycelium.spvmodule.dash.providers.data.AccountBalanceCursor;
-import com.mycelium.spvmodule.dash.providers.data.CurrentReceiveAddressCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionDetailsCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionsSummaryCursor;
 import com.mycelium.spvmodule.dash.providers.data.model.TransactionDetails;
@@ -24,12 +23,12 @@ import com.mycelium.spvmodule.dash.providers.data.model.TransactionSummary;
 import com.mycelium.spvmodule.providers.TransactionContract;
 import com.mycelium.spvmodule.providers.data.CalculateMaxSpendableCursor;
 import com.mycelium.spvmodule.providers.data.CheckSendAmountCursor;
+import com.mycelium.spvmodule.providers.data.CurrentReceiveAddressCursor;
 import com.mycelium.spvmodule.providers.data.ValidateQrCodeCursor;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
@@ -272,9 +271,13 @@ public class TransactionContentProvider extends ContentProvider {
     private Cursor currentReceiveAddress(Wallet wallet, int accountIndex) {
         CurrentReceiveAddressCursor cursor = new CurrentReceiveAddressCursor();
 
+        Address currentReceiveAddress = getAccountCurrentReceiveAddress(wallet);
+        String qrAddressString = Constants.QR_ADDRESS_PREFIX + currentReceiveAddress;
+
         List<Object> columnValues = new ArrayList<>();
-        columnValues.add(accountIndex);                                 //TransactionContract.CurrentReceiveAddress._ID
-        columnValues.add(getAccountCurrentReceiveAddress(wallet));      //TransactionContract.CurrentReceiveAddress.ADDRESS
+        columnValues.add(accountIndex);             //TransactionContract.CurrentReceiveAddress._ID
+        columnValues.add(currentReceiveAddress);    //TransactionContract.CurrentReceiveAddress.ADDRESS
+        columnValues.add(qrAddressString);          //TransactionContract.CurrentReceiveAddress.ADDRESS_QR
         cursor.addRow(columnValues);
         return cursor;
     }

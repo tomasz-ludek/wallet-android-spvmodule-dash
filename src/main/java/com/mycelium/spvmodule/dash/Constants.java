@@ -131,4 +131,6 @@ public final class Constants {
         }
         return Coin.valueOf(minerFeeValue);
     }
+
+    public static final String QR_ADDRESS_PREFIX = "dash:";
 }
