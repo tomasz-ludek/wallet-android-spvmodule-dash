@@ -328,9 +328,20 @@ public class TransactionContentProvider extends ContentProvider {
         }
     }
 
+    public static void notifyWalletUpdate(Context context) {
+        TransactionContentProvider.notifyCurrentReceiveAddress(context);
+        TransactionContentProvider.notifyAccountBalance(context);
+    }
+
     public static void notifyCurrentReceiveAddress(Context context) {
         String packageName = context.getPackageName();
         Uri contentUri = TransactionContract.CurrentReceiveAddress.CONTENT_URI(packageName);
+        context.getContentResolver().notifyChange(contentUri, null);
+    }
+
+    public static void notifyAccountBalance(Context context) {
+        String packageName = context.getPackageName();
+        Uri contentUri = TransactionContract.AccountBalance.CONTENT_URI(packageName);
         context.getContentResolver().notifyChange(contentUri, null);
     }
 

@@ -176,7 +176,7 @@ public class WalletManager {
     public void restoreWalletFromSeed(Context context, List<String> words, NetworkParameters expectedNetworkParameters) throws IOException {
 
         DeterministicSeed deterministicSeed = new DeterministicSeed(words, null, "", Constants.EARLIEST_HD_SEED_CREATION_TIME);
-        Wallet wallet = new Wallet(Constants.NETWORK_PARAMETERS, new KeyChainGroup(Constants.NETWORK_PARAMETERS, deterministicSeed));
+        wallet = new Wallet(Constants.NETWORK_PARAMETERS, new KeyChainGroup(Constants.NETWORK_PARAMETERS, deterministicSeed));
 
         if (!wallet.getParams().equals(expectedNetworkParameters)) {
             throw new IOException("Bad wallet backup network parameters: " + wallet.getParams().getId());
@@ -190,7 +190,7 @@ public class WalletManager {
         walletFile = context.getFileStreamPath(Constants.Files.WALLET_FILENAME_PROTOBUF);
         wallet.saveToFile(walletFile);
 
-        loadWalletFromProtobuf(application);
+        afterLoadWallet(context);
     }
 
     private Wallet restoreWalletFromBackup(Context context) {

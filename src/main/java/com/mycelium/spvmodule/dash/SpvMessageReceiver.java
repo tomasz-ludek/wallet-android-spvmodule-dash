@@ -23,6 +23,7 @@ public class SpvMessageReceiver {
 
     private Context context;
     private WalletManager walletManager;
+    private boolean walletSeedAlreadyRequested = false;
 
     public SpvMessageReceiver(Context context) {
         this.context = context;
@@ -58,7 +59,9 @@ public class SpvMessageReceiver {
                     Wallet wallet = WalletManager.getInstance().getWallet();
                     log.info(wallet.toString(true, true, true, null));
                 } else {
-                    requestPrivateKey(accountIndex);
+                    if (!walletSeedAlreadyRequested) {
+                        requestPrivateKey(accountIndex);
+                    }
                 }
                 break;
             }
@@ -78,6 +81,7 @@ public class SpvMessageReceiver {
         if (walletManager.isWalletReady()) {
             throw new IllegalStateException("Wallet already created");
         }
+        walletSeedAlreadyRequested = true;
         Intent intent = new Intent(IntentContract.RequestWalletSeed.ACTION);
         intent.putExtra(IntentContract.ACCOUNT_INDEX_EXTRA, accountIndex);
         SpvDashModuleApplication.sendMbw(context, intent);

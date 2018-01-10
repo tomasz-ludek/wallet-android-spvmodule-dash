@@ -1,10 +1,10 @@
 [
   {
     "name": "com.mycelium.testnetdigitalassets",
-    "signature": "gz35r0bqdqhXMguVc8UR2+QRbboJFKgr/FzEKO5OoW8="
+    "signature": "Ux+tW+lAkn01UG6h1e68dE8mGvLbKX6Eg+iVJXVbOq8="
   },
   {
-    "name": "com.mycelium.devwallet_spore",
-    "signature": "F6/t7Bj0qtPDmfNdjqReSIHxR6lrwNxaHtT5go6f7HI="
+    "name": "com.mycelium.testnetdigitalassets.debug",
+    "signature": "gz35r0bqdqhXMguVc8UR2+QRbboJFKgr/FzEKO5OoW8="
   }
 ]

@@ -44,8 +44,8 @@ android {
         applicationId "org.dash.mycelium.spvdashmodule"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "0.9"
         multiDexEnabled true
     }
 

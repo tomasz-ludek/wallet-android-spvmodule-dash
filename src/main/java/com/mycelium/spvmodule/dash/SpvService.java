@@ -132,14 +132,11 @@ public class SpvService extends android.app.Service implements BlockchainService
         @Override
         public void onThrottledWalletChanged() {
 //            WalletBalanceWidgetProvider.updateWidgets(BlockchainServiceImpl.this, application.getWallet());
-            Log.d(LOG_TAG, "onThrottledWalletChanged()");
         }
 
         @Override
         public void onCoinsReceived(final Wallet wallet, final Transaction tx, final Coin prevBalance,
                                     final Coin newBalance) {
-
-            Log.d(LOG_TAG, "onCoinsReceived(...)");
 
             transactionsReceived.incrementAndGet();
 
@@ -159,7 +156,7 @@ public class SpvService extends android.app.Service implements BlockchainService
                     if (isReceived && !isReplayedTx) {
                         notificationsHelper.notifyCoinsReceived(address, amount);
                     }
-                    TransactionContentProvider.notifyCurrentReceiveAddress(getApplicationContext());
+                    TransactionContentProvider.notifyWalletUpdate(getApplicationContext());
                 }
             });
         }
