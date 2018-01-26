@@ -16,7 +16,6 @@ import com.mycelium.spvmodule.dash.BuildConfig;
 import com.mycelium.spvmodule.dash.Constants;
 import com.mycelium.spvmodule.dash.WalletManager;
 import com.mycelium.spvmodule.dash.providers.data.AccountBalanceCursor;
-import com.mycelium.spvmodule.dash.providers.data.CurrentReceiveAddressCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionDetailsCursor;
 import com.mycelium.spvmodule.dash.providers.data.TransactionsSummaryCursor;
 import com.mycelium.spvmodule.dash.providers.data.model.TransactionDetails;
@@ -24,12 +23,13 @@ import com.mycelium.spvmodule.dash.providers.data.model.TransactionSummary;
 import com.mycelium.spvmodule.providers.TransactionContract;
 import com.mycelium.spvmodule.providers.data.CalculateMaxSpendableCursor;
 import com.mycelium.spvmodule.providers.data.CheckSendAmountCursor;
+import com.mycelium.spvmodule.providers.data.CurrentReceiveAddressCursor;
+import com.mycelium.spvmodule.providers.data.ValidateAddressCursor;
 import com.mycelium.spvmodule.providers.data.ValidateQrCodeCursor;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
@@ -65,6 +65,7 @@ public class TransactionContentProvider extends ContentProvider {
     private static final int VALIDATE_QR_CODE_ID = 9;
     private static final int CALCULATE_MAX_SPENDABLE_CODE_ID = 10;
     private static final int CHECK_SEND_AMOUNT_ID = 11;
+    private static final int VALIDATE_ADDRESS_ID = 12;
 
     static {
         String auth = TransactionContract.AUTHORITY(BuildConfig.APPLICATION_ID);
@@ -79,6 +80,7 @@ public class TransactionContentProvider extends ContentProvider {
         URI_MATCHER.addURI(auth, TransactionContract.ValidateQrCode.TABLE_NAME, VALIDATE_QR_CODE_ID);
         URI_MATCHER.addURI(auth, TransactionContract.CalculateMaxSpendable.TABLE_NAME, CALCULATE_MAX_SPENDABLE_CODE_ID);
         URI_MATCHER.addURI(auth, TransactionContract.CheckSendAmount.TABLE_NAME, CHECK_SEND_AMOUNT_ID);
+        URI_MATCHER.addURI(auth, TransactionContract.ValidateAddress.TABLE_NAME, VALIDATE_ADDRESS_ID);
     }
 
     private String getTableFromMatch(int match) {
@@ -108,6 +110,9 @@ public class TransactionContentProvider extends ContentProvider {
             case CHECK_SEND_AMOUNT_ID: {
                 return TransactionContract.CheckSendAmount.TABLE_NAME;
             }
+            case VALIDATE_ADDRESS_ID: {
+                return TransactionContract.ValidateAddress.TABLE_NAME;
+            }
             default: {
                 throw new IllegalArgumentException("Unknown match " + match);
             }
@@ -133,10 +138,7 @@ public class TransactionContentProvider extends ContentProvider {
 
         WalletManager walletManager = WalletManager.getInstance();
         if (walletManager.isWalletReady()) {
-            if (selection == null || selectionArgs == null || !selection.startsWith(TransactionContract.TransactionSummary.SELECTION_ACCOUNT_INDEX)) {
-                throw new IllegalArgumentException("selection has to define accountIndex");     //FIXME does it make sense to define separate SELECTION_ACCOUNT_INDEX for each table?
-            }
-            int accountIndex = Integer.parseInt(selectionArgs[0]);
+            int accountIndex = 0;
             int match = URI_MATCHER.match(uri);
             Wallet wallet = walletManager.getWallet();
             switch (match) {
@@ -162,6 +164,9 @@ public class TransactionContentProvider extends ContentProvider {
                 }
                 case CHECK_SEND_AMOUNT_ID: {
                     return checkSendAmount(wallet, selection, selectionArgs);
+                }
+                case VALIDATE_ADDRESS_ID: {
+                    return validateAddress(selection, selectionArgs);
                 }
                 default: {
                     // Do nothing.
@@ -244,7 +249,7 @@ public class TransactionContentProvider extends ContentProvider {
         ValidateQrCodeCursor cursor = new ValidateQrCodeCursor();
         if (selection.endsWith(TransactionContract.ValidateQrCode.SELECTION_QR_CODE)) {
             String qrCode = selectionArgs[1];
-            boolean isValid = isValid(qrCode);
+            boolean isValid = isValidQrCode(qrCode);
 
             List<Object> columnValues = new ArrayList<>();
             columnValues.add(qrCode);                           //TransactionContract.ValidateQrCode.QR_CODE
@@ -255,8 +260,8 @@ public class TransactionContentProvider extends ContentProvider {
         return null;
     }
 
-    private boolean isValid(String qrCode) {
-        log.info("isValid, qrCode = {}", qrCode);
+    private boolean isValidQrCode(String qrCode) {
+        log.info("isValidQrCode, qrCode = {}", qrCode);
         try {
             if (qrCode.startsWith("dash:")) {
                 String rawAddress = qrCode.replaceFirst("dash:", "");
@@ -269,12 +274,42 @@ public class TransactionContentProvider extends ContentProvider {
         return false;
     }
 
+    private Cursor validateAddress(String selection, String[] selectionArgs) {
+        ValidateAddressCursor cursor = new ValidateAddressCursor();
+        if (selection.endsWith(TransactionContract.ValidateAddress.SELECTION_ADDRESS)) {
+            String address = selectionArgs[0];
+            boolean isValid = isValidAddress(address);
+
+            List<Object> columnValues = new ArrayList<>();
+            columnValues.add(address);                          //TransactionContract.ValidateAddress.ADDRESS
+            columnValues.add(isValid ? 1 : 0);                  //TransactionContract.ValidateAddress.IS_VALID
+            cursor.addRow(columnValues);
+            return cursor;
+        }
+        return null;
+    }
+
+    private boolean isValidAddress(String address) {
+        log.info("isValidAddress, address = {}", address);
+        try {
+            org.bitcoinj.core.Address.fromBase58(Constants.NETWORK_PARAMETERS, address);
+            return true;
+        } catch (Exception ex) {
+            // ignore
+        }
+        return false;
+    }
+
     private Cursor currentReceiveAddress(Wallet wallet, int accountIndex) {
         CurrentReceiveAddressCursor cursor = new CurrentReceiveAddressCursor();
 
+        Address currentReceiveAddress = getAccountCurrentReceiveAddress(wallet);
+        String qrAddressString = Constants.QR_ADDRESS_PREFIX + currentReceiveAddress;
+
         List<Object> columnValues = new ArrayList<>();
-        columnValues.add(accountIndex);                                 //TransactionContract.CurrentReceiveAddress._ID
-        columnValues.add(getAccountCurrentReceiveAddress(wallet));      //TransactionContract.CurrentReceiveAddress.ADDRESS
+        columnValues.add(accountIndex);             //TransactionContract.CurrentReceiveAddress._ID
+        columnValues.add(currentReceiveAddress);    //TransactionContract.CurrentReceiveAddress.ADDRESS
+        columnValues.add(qrAddressString);          //TransactionContract.CurrentReceiveAddress.ADDRESS_QR
         cursor.addRow(columnValues);
         return cursor;
     }
@@ -550,6 +585,9 @@ public class TransactionContentProvider extends ContentProvider {
             }
             case CHECK_SEND_AMOUNT_ID: {
                 return TransactionContract.CheckSendAmount.CONTENT_TYPE;
+            }
+            case VALIDATE_ADDRESS_ID: {
+                return TransactionContract.ValidateAddress.CONTENT_TYPE;
             }
             default: {
                 return null;
