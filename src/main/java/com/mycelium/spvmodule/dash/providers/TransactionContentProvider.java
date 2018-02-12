@@ -34,6 +34,7 @@ import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.uri.BitcoinURI;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
@@ -142,7 +143,8 @@ public class TransactionContentProvider extends ContentProvider {
             int match = URI_MATCHER.match(uri);
             Wallet wallet = walletManager.getWallet();
             switch (match) {
-                case TRANSACTION_SUMMARY_LIST: {
+                case TRANSACTION_SUMMARY_LIST:
+                case TRANSACTION_SUMMARY_ID: {
                     return handleTransactionSummaryList(wallet);
                 }
                 case TRANSACTION_DETAILS_ID: {
@@ -263,15 +265,11 @@ public class TransactionContentProvider extends ContentProvider {
     private boolean isValidQrCode(String qrCode) {
         log.info("isValidQrCode, qrCode = {}", qrCode);
         try {
-            if (qrCode.startsWith("dash:")) {
-                String rawAddress = qrCode.replaceFirst("dash:", "");
-                org.bitcoinj.core.Address.fromBase58(Constants.NETWORK_PARAMETERS, rawAddress);
-                return true;
-            }
+            new BitcoinURI(qrCode);
+            return true;
         } catch (Exception ex) {
-            // ignore
+            return false;
         }
-        return false;
     }
 
     private Cursor validateAddress(String selection, String[] selectionArgs) {

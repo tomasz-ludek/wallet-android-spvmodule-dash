@@ -28,7 +28,7 @@ if (releaseKeystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidSdkBuildVersion
 
     dexOptions {
@@ -44,7 +44,7 @@ android {
         applicationId "org.dash.mycelium.spvdashmodule"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 3
+        versionCode 4
         versionName "0.9"
         multiDexEnabled true
     }
@@ -94,10 +94,10 @@ android {
 dependencies {
     testImplementation "junit:junit:$junitVersion"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:25.4.0'
-    implementation 'com.android.support:recyclerview-v7:25.4.0'
-    implementation 'com.android.support:support-v4:25.4.0'
-    implementation 'org.dashj:dashj-core:0.14.4.3'
+    implementation "com.android.support:appcompat-v7:$androidSupportVersion"
+    implementation "com.android.support:recyclerview-v7:$androidSupportVersion"
+    implementation "com.android.support:support-v4:$androidSupportVersion"
+    implementation 'org.dashj:dashj-core:0.15-SNAPSHOT'
     implementation 'com.google.protobuf:protobuf-java:2.6.1'
     implementation 'com.android.support:multidex:1.0.2'
     implementation guavaArtifact

@@ -6,6 +6,7 @@ import com.google.common.base.Stopwatch;
 import com.mycelium.spvmodule.dash.providers.TransactionContentProvider;
 
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.KeyChainGroup;
 import org.bitcoinj.wallet.Protos;
@@ -173,6 +174,25 @@ public class WalletManager {
         }
     }
 
+    public void restoreWalletFromExtendedKeyCoinTypeKey(Context context, String spendingKeyB58, long creationTimeSeconds) throws IOException {
+
+        DeterministicKey coinTypeKey = DeterministicKey.deserializeB58(spendingKeyB58, Constants.NETWORK_PARAMETERS);
+        coinTypeKey.setCreationTimeSeconds(creationTimeSeconds);
+        wallet = Wallet.fromMasterKey(Constants.NETWORK_PARAMETERS, coinTypeKey, 0);
+        wallet.setKeyChainGroupLookaheadSize(20);
+
+        if (!wallet.isConsistent()) {
+            throw new IOException("Inconsistent wallet");
+        }
+
+        log.info("Wallet successfully restored from extended key coin type");
+
+        walletFile = context.getFileStreamPath(Constants.Files.WALLET_FILENAME_PROTOBUF);
+        wallet.saveToFile(walletFile);
+
+        afterLoadWallet(context);
+    }
+
     public void restoreWalletFromSeed(Context context, List<String> words, NetworkParameters expectedNetworkParameters) throws IOException {
 
         DeterministicSeed deterministicSeed = new DeterministicSeed(words, null, "", Constants.EARLIEST_HD_SEED_CREATION_TIME);
@@ -182,7 +202,7 @@ public class WalletManager {
             throw new IOException("Bad wallet backup network parameters: " + wallet.getParams().getId());
         }
         if (!wallet.isConsistent()) {
-            throw new IOException("Inconsistent wallet backup");
+            throw new IOException("Inconsistent wallet");
         }
 
         log.info("Wallet successfully restored from seed");

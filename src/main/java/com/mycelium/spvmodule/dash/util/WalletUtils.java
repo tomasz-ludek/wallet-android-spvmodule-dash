@@ -41,7 +41,7 @@ import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.WrongNetworkException;
 import org.bitcoinj.script.Script;
-import org.bitcoinj.wallet.DeterministicSeed;
+import org.bitcoinj.script.ScriptException;
 import org.bitcoinj.wallet.KeyChainGroup;
 import org.bitcoinj.wallet.UnreadableWalletException;
 import org.bitcoinj.wallet.Wallet;
