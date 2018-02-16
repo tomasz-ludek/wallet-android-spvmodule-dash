@@ -6,6 +6,7 @@ import com.google.common.base.Stopwatch;
 import com.mycelium.spvmodule.dash.providers.TransactionContentProvider;
 
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.crypto.ChildNumber;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.KeyChainGroup;
@@ -178,7 +179,7 @@ public class WalletManager {
 
         DeterministicKey coinTypeKey = DeterministicKey.deserializeB58(spendingKeyB58, Constants.NETWORK_PARAMETERS);
         coinTypeKey.setCreationTimeSeconds(creationTimeSeconds);
-        wallet = Wallet.fromMasterKey(Constants.NETWORK_PARAMETERS, coinTypeKey, 0);
+        wallet = Wallet.fromMasterKey(Constants.NETWORK_PARAMETERS, coinTypeKey, ChildNumber.ZERO);
         wallet.setKeyChainGroupLookaheadSize(20);
 
         if (!wallet.isConsistent()) {
