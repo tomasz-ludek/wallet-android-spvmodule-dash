@@ -82,7 +82,7 @@ public class SpvMessageReceiver {
             throw new IllegalStateException("Wallet already created");
         }
         walletSeedAlreadyRequested = true;
-        Intent intent = IntentContract.RequestPrivateExtendedKeyCoinTypeToMBW.createIntent(accountIndex);
+        Intent intent = IntentContract.RequestPrivateExtendedKeyCoinTypeToMBW.createIntent(accountIndex, -1L);
         SpvDashModuleApplication.sendMbw(context, intent);
     }
 
