@@ -121,7 +121,7 @@ public class NotificationsHelper {
         notification.setContentTitle(context.getString(R.string.app_name));
         notification.setContentText(context.getString(R.string.notification_peers_connected_msg, numPeers));
         notification.setContentIntent(PendingIntent.getActivity(context, 0,
-                new Intent(context, PeersActivity.class), 0));
+                new Intent(context, NetworkMonitorActivity.class), 0));
         notification.setWhen(System.currentTimeMillis());
         notification.setOngoing(true);
         nm.notify(NOTIFICATION_ID_CONNECTED, notification.getNotification());

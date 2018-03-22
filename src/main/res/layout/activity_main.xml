@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context="com.mycelium.spvmodule.dash.MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.mycelium.spvmodule.dash.MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        android:minHeight="?attr/actionBarSize"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:theme="@style/AppTheme.Toolbar"
+        app:titleTextAppearance="@style/AppTheme.Toolbar.Title"
+        tools:ignore="UnusedAttribute" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,7 +29,7 @@
             android:layout_height="96dp"
             android:layout_gravity="center_horizontal"
             android:padding="16dp"
-            android:src="@mipmap/ic_app_color"/>
+            android:src="@mipmap/ic_app_color" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -38,7 +41,7 @@
                 android:id="@+id/walletLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/wallet_not_initialized"/>
+                android:text="@string/wallet_not_initialized" />
 
         </LinearLayout>
     </LinearLayout>
@@ -49,7 +52,7 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:text="SPV out of sync"
-        android:textSize="12sp"/>
+        android:textSize="12sp" />
 
     <Button
         android:id="@+id/btn1"
@@ -58,7 +61,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/textView"
-        android:text="Info log"/>
+        android:text="Info log"
+        android:textColor="@color/white" />
 
     <Button
         android:id="@+id/btn2"
@@ -67,7 +71,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/textView"
-        android:text="Peers list"/>
+        android:text="@string/network_monitor_activity_title"
+        android:textColor="@color/white" />
 
     <Button
         android:id="@+id/btn3"
@@ -76,7 +81,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/textView"
-        android:text="Send"/>
+        android:text="Send"
+        android:textColor="@color/white" />
 
     <Button
         android:id="@+id/btn4"
@@ -85,6 +91,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/textView"
-        android:text="Restore dummy wallet"/>
+        android:text="Restore dummy wallet" />
 
 </LinearLayout>

@@ -7,6 +7,9 @@
     <color name="strong_blue">#1c75bc</color>
     <color name="vivid_red">#ec2227</color>
     <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="bg_less_bright">#ffe8e8f0</color>
+    <color name="bg_list">#40ffffff</color>
 
     <color name="fg_less_significant">#ff666666</color>
     <color name="fg_network_significant">#ffffffff</color>

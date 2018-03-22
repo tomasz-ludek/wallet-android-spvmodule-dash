@@ -1,7 +1,25 @@
 <resources>
     <string name="app_name">SPV Dash Module</string>
 
-    <string name="peers_activity_title">Peers list</string>
+    <string name="network_monitor_activity_title">Network monitor</string>
+    <string name="network_monitor_peer_list_title">Peers</string>
+    <string name="network_monitor_block_list_title">Blocks</string>
+
+    <string name="block_row_now">just now</string>
+    <string name="peer_list_fragment_empty">No peers connected</string>
+    <string name="peer_list_row_ping_time">⇆ %d&#x2009;ms</string>
+
+    <string name="symbol_to">→</string>
+    <string name="symbol_from">←</string>
+    <string name="symbol_internal">⇄</string>
+
+    <string name="action_browse">Browse</string>
+
+    <string name="wallet_transactions_fragment_coinbase">mined</string>
+    <string name="wallet_transactions_fragment_internal">internal</string>
+
+    <string name="block_row_mining_difficulty_adjustment">Mining difficulty adjustment</string>
+    <string name="block_row_mining_reward_adjustment">Mining reward halving</string>
 
     <string name="notification_coins_received_msg">Received %s</string>
     <string name="notification_peers_connected_msg">%d peers connected</string>
@@ -10,10 +28,26 @@
     <string name="button_scan">Scan</string>
     <string name="wallet_not_initialized">Wallet not initialized</string>
 
-    <string name="peer_list_fragment_empty">No peers connected</string>
-    <string name="peer_list_row_ping_time">⇆ %d&#x2009;ms</string>
-
     <string name="module_name">Dash Module</string>
     <string name="module_description">Dash account support</string>
+
+    <string-array name="preferences_block_explorer_values">
+        <item>http://explorer.dash.org/chain/Dash/</item>
+        <item>http://explorer.darkcoin.qa/</item>
+        <item>https://bitinfocharts.com/darkcoin/</item>
+    </string-array>
+    <string-array name="preferences_block_explorer_labels">
+        <item>Dash Block Explorer (Official)</item>
+        <item>Dash Block Explorer (Mirror)</item>
+        <item>BitinfoCharts</item>
+    </string-array>
+    <string-array name="preferences_block_explorer_values_testnet">
+        <item>http://test.explorer.dash.org/</item>
+        <item>http://test.explorer.dashninja.pl/</item>
+    </string-array>
+    <string-array name="preferences_block_explorer_labels_testnet">
+        <item>Dash Block Explorer (Official Testnet)</item>
+        <item>Dash Ninja</item>
+    </string-array>
 
 </resources>

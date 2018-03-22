@@ -111,7 +111,7 @@ public class MainActivity extends ToolbarActivity implements View.OnClickListene
     }
 
     private void showPeers() {
-        Intent intent = new Intent(this, PeersActivity.class);
+        Intent intent = new Intent(this, NetworkMonitorActivity.class);
         startActivity(intent);
     }
 

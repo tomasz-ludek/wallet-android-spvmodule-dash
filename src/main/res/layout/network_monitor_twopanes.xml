@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+                <fragment
+                    android:id="@+id/peer_list_fragment"
+                    android:name="com.mycelium.spvmodule.dash.PeerListFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:layout="@layout/peer_list_fragment" />
+
+                <fragment
+                    android:id="@+id/block_list_fragment"
+                    android:name="com.mycelium.spvmodule.dash.BlockListFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:layout="@layout/block_list_fragment" />
+</FrameLayout>
