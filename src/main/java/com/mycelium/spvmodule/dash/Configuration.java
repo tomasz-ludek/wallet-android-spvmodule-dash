@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.text.format.DateUtils;
 
 import com.google.common.base.Strings;
 
@@ -42,6 +43,7 @@ public class Configuration {
     public static final String PREFS_KEY_BLOCK_EXPLORER = "block_explorer";
 
     private static final String PREFS_KEY_LAST_VERSION = "last_version";
+    private static final String PREFS_KEY_LAST_USED = "last_used";
     private static final String PREFS_KEY_BEST_CHAIN_HEIGHT_EVER = "best_chain_height_ever";
     public static final String PREFS_KEY_INSTANTX_ENABLED = "labs_instantx_enabled";
 
@@ -89,6 +91,22 @@ public class Configuration {
 
     public boolean getTrustedPeerOnly() {
         return prefs.getBoolean(PREFS_KEY_TRUSTED_PEER_ONLY, false);
+    }
+
+    public boolean hasBeenUsed() {
+        return prefs.contains(PREFS_KEY_LAST_USED);
+    }
+
+    public long getLastUsedAgo() {
+        final long now = System.currentTimeMillis();
+
+        return now - prefs.getLong(PREFS_KEY_LAST_USED, 0);
+    }
+
+    public void touchLastUsed() {
+        final long prefsLastUsed = prefs.getLong(PREFS_KEY_LAST_USED, 0);
+        final long now = System.currentTimeMillis();
+        prefs.edit().putLong(PREFS_KEY_LAST_USED, now).apply();
     }
 
     public int getBestChainHeightEver() {
