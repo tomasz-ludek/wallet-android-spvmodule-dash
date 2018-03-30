@@ -10,7 +10,8 @@ public class AccountBalanceCursor extends MatrixCursor {
             TransactionContract.AccountBalance._ID,
             TransactionContract.AccountBalance.CONFIRMED,
             TransactionContract.AccountBalance.SENDING,
-            TransactionContract.AccountBalance.RECEIVING
+            TransactionContract.AccountBalance.RECEIVING,
+            TransactionContract.AccountBalance.SYMBOL
     };
 
     public AccountBalanceCursor() {

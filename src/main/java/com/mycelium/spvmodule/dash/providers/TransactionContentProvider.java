@@ -234,6 +234,7 @@ public class TransactionContentProvider extends ContentProvider {
             columnValues.add(txFee);
             columnValues.add(txFeeFactor);
             columnValues.add(maxSpendableAmount);       //TransactionContract.CalculateMaxSpendable.MAX_SPENDABLE
+            columnValues.add(Constants.COIN_SYMBOL);    //TransactionContract.CalculateMaxSpendable.SYMBOL
             cursor.addRow(columnValues);
             return cursor;
         }
@@ -320,6 +321,7 @@ public class TransactionContentProvider extends ContentProvider {
         columnValues.add(getAccountBalance(wallet));      //TransactionContract.AccountBalance.CONFIRMED
         columnValues.add(getAccountSending(wallet));      //TransactionContract.AccountBalance.SENDING
         columnValues.add(getAccountReceiving(wallet));    //TransactionContract.AccountBalance.RECEIVING
+        columnValues.add(Constants.COIN_SYMBOL);          //TransactionContract.AccountBalance.SYMBOL
         cursor.addRow(columnValues);
         return cursor;
     }
@@ -386,6 +388,7 @@ public class TransactionContentProvider extends ContentProvider {
             List<Object> columnValues = new ArrayList<>();
             columnValues.add(rowItem.txid.toString());                              //TransactionContract.TransactionSummary._ID
             columnValues.add(rowItem.value.toPlainString());                        //TransactionContract.TransactionSummary.VALUE
+            columnValues.add(Constants.COIN_SYMBOL);                                //TransactionContract.TransactionSummary.SYMBOL
             columnValues.add(rowItem.isIncoming ? 1 : 0);                           //TransactionContract.TransactionSummary.IS_INCOMING
             columnValues.add(rowItem.time);                                         //TransactionContract.TransactionSummary.TIME
             columnValues.add(rowItem.height);                                       //TransactionContract.TransactionSummary.HEIGHT

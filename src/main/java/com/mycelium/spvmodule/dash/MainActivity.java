@@ -137,7 +137,7 @@ public class MainActivity extends ToolbarActivity implements View.OnClickListene
         log.info("fresh receive address: " + wallet.freshReceiveAddress());
         log.info("watched addresses: " + wallet.getWatchedAddresses().size());
         log.info("issued receive addresses: " + wallet.getIssuedReceiveAddresses().size());
-        log.info(wallet.toString(true, true, true, null));
+        log.info(wallet.toString(true, null, true, true, null));
     }
 
     private void sendSomeCoins() {

@@ -133,4 +133,6 @@ public final class Constants {
     }
 
     public static final String QR_ADDRESS_PREFIX = "dash:";
+
+    public static final String COIN_SYMBOL = "DASH";
 }
