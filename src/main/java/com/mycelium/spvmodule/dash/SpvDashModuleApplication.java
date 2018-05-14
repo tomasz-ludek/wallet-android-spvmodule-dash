@@ -205,7 +205,7 @@ public class SpvDashModuleApplication extends MultiDexApplication implements Mod
     }
 
     public static void sendMbw(Context context, Intent intent) {
-        CommunicationManager.getInstance(context.getApplicationContext()).send(getMbwModuleName(), intent);
+        CommunicationManager.getInstance().send(getMbwModuleName(), intent);
     }
 
     private static String getMbwModuleName() {

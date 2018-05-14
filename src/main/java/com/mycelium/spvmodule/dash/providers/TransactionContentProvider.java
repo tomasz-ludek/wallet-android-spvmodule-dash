@@ -122,7 +122,8 @@ public class TransactionContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        communicationManager = CommunicationManager.getInstance(getContext());
+        CommunicationManager.init(getContext(), com.mycelium.spvmodulecontract.BuildConfig.SpvApiVersion);
+        communicationManager = CommunicationManager.getInstance();
         return true;
     }
 
